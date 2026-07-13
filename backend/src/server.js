@@ -22,7 +22,7 @@ const PORT = process.env.PORT || 5000;
 // the built frontend — see "Serve the built frontend" below), the frontend
 // is same-origin, so CORS/Socket.io origin checks are a non-issue and this
 // can be left at its default.
-const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "http://localhost:3000";
+const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "https://chat-app-frontend-vqeh.onrender.com";
 // Support a comma-separated list of origins for flexibility across dev/prod
 const allowedOrigins = CLIENT_ORIGIN.split(",").map((o) => o.trim());
 
