@@ -1,0 +1,12 @@
+{
+  "name": "realtime-chat-app",
+  "private": true,
+  "description": "Root convenience scripts for a single-service deployment (backend serves the built frontend).",
+  "scripts": {
+    "install:all": "npm install --prefix backend && npm install --prefix frontend",
+    "build": "npm install --prefix frontend && npm run build --prefix frontend && rm -rf backend/src/public && cp -r frontend/build backend/src/public",
+    "start": "npm start --prefix backend",
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:frontend": "npm start --prefix frontend"
+  }
+}
