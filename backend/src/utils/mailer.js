@@ -23,6 +23,16 @@ if (isConfigured) {
     port: Number(SMTP_PORT),
     secure: Number(SMTP_PORT) === 465, // 465 = implicit TLS; 587/25 = STARTTLS
     auth: { user: SMTP_USER, pass: SMTP_PASS },
+    // Nodemailer's defaults allow slow/bad connections to hang for a long
+    // time before failing. Since forgotPassword awaits this call before
+    // responding, a hung connection here means a hung "Sending..." button
+    // on the frontend. These caps make a misconfigured/unreachable SMTP
+    // server fail within ~10s instead — the request still succeeds from the
+    // user's point of view (see the try/catch in authController), it just
+    // won't have actually sent an email, and the reason will be logged.
+    connectionTimeout: 10_000,
+    greetingTimeout: 10_000,
+    socketTimeout: 10_000,
   });
 
   // Verify the connection at startup so misconfigured SMTP (wrong
