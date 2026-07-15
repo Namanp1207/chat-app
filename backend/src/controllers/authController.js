@@ -7,7 +7,7 @@ const presence = require("../socket/presence");
 
 const USERNAME_REGEX = /^[a-zA-Z0-9_]{3,20}$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+const FRONTEND_URL = process.env.FRONTEND_URL || "https://chat-app-frontend-vqeh.onrender.com";
 
 // POST /api/auth/register
 const register = async (req, res, next) => {
