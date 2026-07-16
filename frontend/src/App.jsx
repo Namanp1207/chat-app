@@ -11,7 +11,15 @@ import {
   rejectConnection,
   UnauthorizedError,
 } from "./api/api";
-import { login as apiLogin, register as apiRegister, saveSession, clearSession, getToken, getStoredUser, deleteAccount as apiDeleteAccount } from "./api/auth";
+import {
+  login as apiLogin,
+  register as apiRegister,
+  saveSession,
+  clearSession,
+  getToken,
+  getStoredUser,
+  deleteAccount as apiDeleteAccount,
+} from "./api/auth";
 import { socket, connectSocket, disconnectSocket } from "./socket/socket";
 import { conversationIdFor } from "./utils/conversation";
 import useCall from "./hooks/useCall";
@@ -40,6 +48,19 @@ export default function App() {
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [typingPeers, setTypingPeers] = useState(new Set());
   const [isConnected, setIsConnected] = useState(false);
+
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem("theme") || "light";
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+  };
 
   const isTypingRef = useRef(false);
   const activePeerRef = useRef(null);
@@ -114,7 +135,10 @@ export default function App() {
         return { ...prev, [message.conversationId]: [...list, message] };
       });
 
-      const peer = message.fromUsername === username ? message.toUsername : message.fromUsername;
+      const peer =
+        message.fromUsername === username
+          ? message.toUsername
+          : message.fromUsername;
       if (peer !== activePeerRef.current) {
         setUnreadCounts((prev) => ({ ...prev, [peer]: (prev[peer] || 0) + 1 }));
       }
@@ -125,7 +149,9 @@ export default function App() {
         const next = { ...prev };
         for (const key of Object.keys(next)) {
           if (next[key].some((m) => m.id === id)) {
-            next[key] = next[key].map((m) => (m.id === id ? { ...m, status } : m));
+            next[key] = next[key].map((m) =>
+              m.id === id ? { ...m, status } : m,
+            );
           }
         }
         return next;
@@ -185,7 +211,10 @@ export default function App() {
     setAuthError("");
     setIsSubmitting(true);
     try {
-      const data = mode === "login" ? await apiLogin(name, password) : await apiRegister(name, password, email);
+      const data =
+        mode === "login"
+          ? await apiLogin(name, password)
+          : await apiRegister(name, password, email);
       saveSession(data.token, data.user);
       setToken(data.token);
       setUsername(data.user.username);
@@ -206,7 +235,10 @@ export default function App() {
       if (!loadedConversations.has(conversationId)) {
         fetchConversation(token, peer)
           .then((history) => {
-            setMessagesByConversation((prev) => ({ ...prev, [conversationId]: history }));
+            setMessagesByConversation((prev) => ({
+              ...prev,
+              [conversationId]: history,
+            }));
             setLoadedConversations((prev) => new Set(prev).add(conversationId));
           })
           .catch((err) => {
@@ -215,20 +247,26 @@ export default function App() {
           });
       }
     },
-    [username, token, loadedConversations, handleLogout]
+    [username, token, loadedConversations, handleLogout],
   );
 
   const handleSend = useCallback(
     (text) => {
       if (!activePeer) return;
-      socket.emit("message:send", { toUsername: activePeer, type: "text", text }, (response) => {
-        if (!response || !response.success) {
-          setLoadError(`Message failed to send: ${(response && response.error) || "unknown error"}`);
-          setTimeout(() => setLoadError(""), 4000);
-        }
-      });
+      socket.emit(
+        "message:send",
+        { toUsername: activePeer, type: "text", text },
+        (response) => {
+          if (!response || !response.success) {
+            setLoadError(
+              `Message failed to send: ${(response && response.error) || "unknown error"}`,
+            );
+            setTimeout(() => setLoadError(""), 4000);
+          }
+        },
+      );
     },
-    [activePeer]
+    [activePeer],
   );
 
   const handleSendImage = useCallback(
@@ -236,16 +274,24 @@ export default function App() {
       if (!activePeer) return;
       const { url } = await uploadImage(token, file);
       return new Promise((resolve, reject) => {
-        socket.emit("message:send", { toUsername: activePeer, type: "image", imageUrl: url }, (response) => {
-          if (!response || !response.success) {
-            reject(new Error((response && response.error) || "Failed to send image"));
-          } else {
-            resolve(response.data);
-          }
-        });
+        socket.emit(
+          "message:send",
+          { toUsername: activePeer, type: "image", imageUrl: url },
+          (response) => {
+            if (!response || !response.success) {
+              reject(
+                new Error(
+                  (response && response.error) || "Failed to send image",
+                ),
+              );
+            } else {
+              resolve(response.data);
+            }
+          },
+        );
       });
     },
-    [token, activePeer]
+    [token, activePeer],
   );
 
   const handleTypingStart = useCallback(() => {
@@ -264,7 +310,7 @@ export default function App() {
     (toUsername, callType) => {
       call.startCall(toUsername, callType);
     },
-    [call]
+    [call],
   );
 
   const handleFollow = useCallback(
@@ -273,7 +319,7 @@ export default function App() {
         .then(() => refreshUsers())
         .catch((err) => setLoadError(err.message));
     },
-    [token, refreshUsers]
+    [token, refreshUsers],
   );
 
   const handleAccept = useCallback(
@@ -285,7 +331,7 @@ export default function App() {
         })
         .catch((err) => setLoadError(err.message));
     },
-    [token, refreshConnections, refreshUsers]
+    [token, refreshConnections, refreshUsers],
   );
 
   const handleReject = useCallback(
@@ -297,7 +343,7 @@ export default function App() {
         })
         .catch((err) => setLoadError(err.message));
     },
-    [token, refreshConnections, refreshUsers]
+    [token, refreshConnections, refreshUsers],
   );
 
   const handleDeleteAccount = useCallback(async () => {
@@ -311,12 +357,23 @@ export default function App() {
   }, [token, handleLogout]);
 
   if (!token || !username) {
-    return <Login onSubmit={handleAuthSubmit} error={authError} isSubmitting={isSubmitting} />;
+    return (
+      <Login
+        onSubmit={handleAuthSubmit}
+        error={authError}
+        isSubmitting={isSubmitting}
+      />
+    );
   }
 
-  const conversationId = activePeer ? conversationIdFor(username, activePeer) : null;
-  const messages = conversationId ? messagesByConversation[conversationId] || [] : [];
-  const typingUsers = activePeer && typingPeers.has(activePeer) ? [activePeer] : [];
+  const conversationId = activePeer
+    ? conversationIdFor(username, activePeer)
+    : null;
+  const messages = conversationId
+    ? messagesByConversation[conversationId] || []
+    : [];
+  const typingUsers =
+    activePeer && typingPeers.has(activePeer) ? [activePeer] : [];
 
   return (
     <ChatWindow
@@ -345,6 +402,8 @@ export default function App() {
       onTypingStop={handleTypingStop}
       call={call}
       onStartCall={handleStartCall}
+      theme={theme}
+      toggleTheme={toggleTheme}
     />
   );
 }

@@ -32,6 +32,8 @@ export default function ChatWindow({
   onTypingStop,
   call,
   onStartCall,
+  theme,
+  toggleTheme,
 }) {
   const isPeerOnline = activePeer && onlineUsers.includes(activePeer);
 
@@ -53,6 +55,8 @@ export default function ChatWindow({
         onReject={onReject}
         onLogout={onLogout}
         onDeleteAccount={onDeleteAccount}
+        theme={theme}
+        toggleTheme={toggleTheme}
       />
 
       <div className="chat-main">

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import ConversationList from "./ConversationList";
 import PeopleList from "./PeopleList";
 import Avatar from "./Avatar";
+import { MoreVertical } from "lucide-react";
 
 export default function Sidebar({
   username,
@@ -19,14 +20,17 @@ export default function Sidebar({
   onReject,
   onLogout,
   onDeleteAccount,
+  theme,
+  toggleTheme,
 }) {
   const requestCount = incomingRequests.length;
   const [menuOpen, setMenuOpen] = useState(false);
+  const [chatSearch, setChatSearch] = useState("");
 
   const handleDeleteClick = () => {
     setMenuOpen(false);
     const confirmed = window.confirm(
-      "Delete your account? This permanently deletes your account, your connections, and every conversation you're part of. This can't be undone."
+      "Delete your account? This permanently deletes your account, your connections, and every conversation you're part of. This can't be undone.",
     );
     if (confirmed) onDeleteAccount();
   };
@@ -45,11 +49,14 @@ export default function Sidebar({
             title="Account menu"
             onClick={() => setMenuOpen((v) => !v)}
           >
-            ⋯
+            <MoreVertical size={20} />
           </button>
           {menuOpen && (
             <>
-              <div className="profile-menu-backdrop" onClick={() => setMenuOpen(false)} />
+              <div
+                className="profile-menu-backdrop"
+                onClick={() => setMenuOpen(false)}
+              />
               <div className="profile-menu">
                 <button
                   className="profile-menu-item"
@@ -60,8 +67,17 @@ export default function Sidebar({
                 >
                   Log out
                 </button>
-                <button className="profile-menu-item danger" onClick={handleDeleteClick}>
+                <button
+                  className="profile-menu-item danger"
+                  onClick={handleDeleteClick}
+                >
                   Delete account
+                </button>
+                <button
+                  className="profile-menu-item-theme"
+                  onClick={toggleTheme}
+                >
+                  {theme === "dark" ? "☀️ Light Mode" : "🌙 Dark Mode"}
                 </button>
               </div>
             </>
@@ -81,7 +97,9 @@ export default function Sidebar({
           onClick={() => onTabChange("people")}
         >
           People
-          {requestCount > 0 && <span className="tab-badge">{requestCount}</span>}
+          {requestCount > 0 && (
+            <span className="tab-badge">{requestCount}</span>
+          )}
         </button>
       </div>
 
@@ -93,6 +111,8 @@ export default function Sidebar({
             activePeer={activePeer}
             unreadCounts={unreadCounts}
             onSelect={onSelectConversation}
+            chatSearch={chatSearch}
+            setChatSearch={setChatSearch}
           />
         ) : (
           <PeopleList
